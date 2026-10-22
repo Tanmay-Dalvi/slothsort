@@ -25,7 +25,7 @@ export const ProviderSelector: React.FC<ProviderSelectorProps> = ({
         title: 'Local Ollama',
         subtitle: `${provider.model_name}`,
         badge: '100% Offline & Private',
-        badgeColor: 'bg-forest-100 text-forest-800 border-forest-300',
+        badgeColor: 'bg-forest-50 text-forest-800 border-forest-200',
         detail: 'Inference runs entirely on your CPU/GPU. No metadata or filenames leave your laptop.',
       };
     } else if (nameLower.includes('gemini')) {
@@ -35,7 +35,7 @@ export const ProviderSelector: React.FC<ProviderSelectorProps> = ({
         title: 'Hosted Gemini',
         subtitle: `${provider.model_name}`,
         badge: 'Cloud API (Metadata Only)',
-        badgeColor: 'bg-amber-50 text-amber-800 border-amber-300',
+        badgeColor: 'bg-amber-50 text-amber-800 border-amber-200',
         detail: 'Sends filenames and file sizes over HTTPS to Google Gemini. File contents are NEVER sent.',
       };
     } else {
@@ -45,7 +45,7 @@ export const ProviderSelector: React.FC<ProviderSelectorProps> = ({
         title: 'Deterministic Mock',
         subtitle: 'Rule-based heuristics',
         badge: 'Instant & Offline',
-        badgeColor: 'bg-slate-100 text-slate-700 border-slate-300',
+        badgeColor: 'bg-slate-100 text-slate-700 border-slate-200',
         detail: 'Fast rule-based categorization without LLM inference. Great for quick testing.',
       };
     }
@@ -92,27 +92,52 @@ export const ProviderSelector: React.FC<ProviderSelectorProps> = ({
               }`}
             >
               <div>
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center space-x-2">
+                {/* Header row: Icon + Title + Status Pill */}
+                <div className="flex items-center justify-between gap-2 mb-2">
+                  <div className="flex items-center space-x-2 min-w-0">
                     <meta.icon
-                      className={`w-4 h-4 ${
+                      className={`w-4 h-4 shrink-0 ${
                         isSelected ? 'text-forest-700' : 'text-slate-500'
                       }`}
                     />
-                    <span className="font-semibold text-sm text-slate-900">
+                    <span className="font-semibold text-sm text-slate-900 truncate">
                       {meta.title}
                     </span>
                   </div>
-                  <span
-                    className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${meta.badgeColor}`}
-                  >
-                    {p.is_available ? meta.badge : 'Unavailable'}
-                  </span>
+                  {isSelected ? (
+                    <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full border shrink-0 whitespace-nowrap bg-forest-600 text-white border-forest-700 shadow-xs">
+                      <span className="w-1.5 h-1.5 rounded-full bg-white" />
+                      Active
+                    </span>
+                  ) : (
+                    <span
+                      className={`inline-flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-full border shrink-0 whitespace-nowrap ${
+                        p.is_available
+                          ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                          : 'bg-slate-100 text-slate-500 border-slate-200'
+                      }`}
+                    >
+                      <span
+                        className={`w-1.5 h-1.5 rounded-full ${
+                          p.is_available ? 'bg-emerald-500' : 'bg-slate-400'
+                        }`}
+                      />
+                      {p.is_available ? 'Available' : 'Unavailable'}
+                    </span>
+                  )}
                 </div>
 
-                <p className="text-xs text-slate-500 font-mono mb-2">
-                  {meta.subtitle}
-                </p>
+                {/* Sub-row: Model info & privacy tags */}
+                <div className="flex flex-wrap items-center gap-1.5 mb-2.5">
+                  <span className="font-mono text-[11px] text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md border border-slate-200 shrink-0">
+                    {meta.subtitle}
+                  </span>
+                  <span
+                    className={`inline-flex items-center text-[10px] font-medium px-2 py-0.5 rounded-full border shrink-0 whitespace-nowrap ${meta.badgeColor}`}
+                  >
+                    {meta.badge}
+                  </span>
+                </div>
 
                 <p className="text-xs text-slate-600 leading-relaxed">
                   {meta.detail}
@@ -127,8 +152,9 @@ export const ProviderSelector: React.FC<ProviderSelectorProps> = ({
               )}
 
               {p.is_available && p.latency_ms > 0 && (
-                <div className="mt-3 pt-1 text-[11px] text-forest-700 font-medium">
-                  Response latency: ~{p.latency_ms} ms
+                <div className="mt-3 pt-1 text-[11px] text-forest-700 font-medium flex items-center space-x-1">
+                  <span className="text-slate-400">Response latency:</span>
+                  <span className="font-semibold">~{p.latency_ms} ms</span>
                 </div>
               )}
             </button>

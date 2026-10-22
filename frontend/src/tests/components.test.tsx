@@ -4,6 +4,7 @@ import { Header } from '../components/Header';
 import { ProviderSelector } from '../components/ProviderSelector';
 import { ScanOverview } from '../components/ScanOverview';
 import { ExecutionModal } from '../components/ExecutionModal';
+import { GettingStartedGuide } from '../components/GettingStartedGuide';
 import { ProviderHealth, ScanResult } from '../types/api';
 
 describe('Frontend Component Tests', () => {
@@ -155,5 +156,28 @@ describe('Frontend Component Tests', () => {
 
     fireEvent.click(applyBtn);
     expect(onExecute).toHaveBeenCalled();
+  });
+
+  it('GettingStartedGuide renders 4 steps and demo button', () => {
+    const onSelectDemo = vi.fn();
+    const onTriggerScan = vi.fn();
+
+    render(
+      <GettingStartedGuide
+        onSelectDemoPath={onSelectDemo}
+        onTriggerScan={onTriggerScan}
+      />
+    );
+
+    expect(screen.getByText(/How SlothSort Works/i)).toBeTruthy();
+    expect(screen.getByText('Select Folder')).toBeTruthy();
+    expect(screen.getByText('Scan Metadata')).toBeTruthy();
+    expect(screen.getByText('AI Plan Preview')).toBeTruthy();
+    expect(screen.getByText('Approve & Undo')).toBeTruthy();
+
+    const demoBtn = screen.getByRole('button', { name: /load demo & scan/i });
+    expect(demoBtn).toBeTruthy();
+    fireEvent.click(demoBtn);
+    expect(onSelectDemo).toHaveBeenCalledWith('/tmp/slothsort_demo');
   });
 });

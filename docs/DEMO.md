@@ -64,6 +64,9 @@ python -m backend.app.cli.seed_demo --dry-run /tmp/slothsort_demo
 
 # Seed the actual harmless demo files:
 python -m backend.app.cli.seed_demo /tmp/slothsort_demo
+
+# (Optional) Seed with a pre-existing destination collision to test collision warnings:
+python -m backend.app.cli.seed_demo --with-collision /tmp/slothsort_demo
 ```
 
 You will see 12 realistic sample files created:

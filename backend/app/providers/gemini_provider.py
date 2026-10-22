@@ -34,11 +34,21 @@ class GeminiProvider(AIProvider):
         batch_size: int = 15,
         client: Optional[httpx.AsyncClient] = None,
     ):
-        self._api_key = api_key if api_key is not None else settings.GEMINI_API_KEY
-        self.model = model or settings.GEMINI_MODEL
+        self._explicit_api_key = api_key
+        self._model = model
         self.timeout_seconds = timeout_seconds
         self.batch_size = max(1, min(batch_size, settings.MAX_BATCH_SIZE))
         self._external_client = client
+
+    @property
+    def _api_key(self) -> str:
+        if self._explicit_api_key is not None:
+            return self._explicit_api_key
+        return settings.GEMINI_API_KEY
+
+    @property
+    def model(self) -> str:
+        return self._model or settings.GEMINI_MODEL
 
     def __repr__(self) -> str:
         # Prevent key leakage in logs or representations

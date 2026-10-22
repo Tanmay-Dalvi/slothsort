@@ -11,6 +11,7 @@ interface UndoHistoryDrawerProps {
   isRollingBack: boolean;
   activeRollingBackId: string | null;
   lastRollbackResult: RollbackResult | null;
+  isDemo?: boolean;
 }
 
 export const UndoHistoryDrawer: React.FC<UndoHistoryDrawerProps> = ({
@@ -22,6 +23,7 @@ export const UndoHistoryDrawer: React.FC<UndoHistoryDrawerProps> = ({
   isRollingBack,
   activeRollingBackId,
   lastRollbackResult,
+  isDemo = false,
 }) => {
   if (!isOpen) return null;
 
@@ -63,7 +65,7 @@ export const UndoHistoryDrawer: React.FC<UndoHistoryDrawerProps> = ({
           <div className="flex items-center space-x-2">
             <Clock className="w-5 h-5 text-forest-800" />
             <h2 className="text-base font-bold text-slate-900">
-              Organization History & Undo
+              Organization History &amp; Undo
             </h2>
           </div>
           <div className="flex items-center space-x-2">
@@ -85,6 +87,13 @@ export const UndoHistoryDrawer: React.FC<UndoHistoryDrawerProps> = ({
             </button>
           </div>
         </div>
+
+        {/* Demo Sandbox Disclosure */}
+        {isDemo && (
+          <div className="mx-4 mt-3 p-2.5 rounded-lg bg-amber-50 border border-amber-200 text-amber-900 text-[11px] leading-relaxed">
+            <span className="font-bold">Demo Sandbox:</span> Manifests shown here represent simulated executions. Rolling back tests the rollback logic in memory without altering real files on disk.
+          </div>
+        )}
 
         {/* Optional Last Rollback Notice */}
         {lastRollbackResult && (

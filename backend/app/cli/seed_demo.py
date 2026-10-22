@@ -208,6 +208,7 @@ def seed_demo_directory(
     target_dir: Path,
     dry_run: bool = False,
     file_specs: Optional[List[Dict[str, Any]]] = None,
+    with_collision: bool = False,
 ) -> Tuple[List[Path], List[Tuple[Path, str]]]:
     """
     Populates target_dir with sample dummy files.
@@ -259,6 +260,27 @@ def seed_demo_directory(
                 dest_file.write_text(content if isinstance(content, str) else content.decode("utf-8"), encoding="utf-8")
             created.append(dest_file)
 
+    # Optional collision file to demonstrate collision detection
+    if with_collision:
+        collision_rel = Path("Finance") / "invoice_2026_q3_draft.pdf"
+        collision_file = target_dir / collision_rel
+        try:
+            col_canonical = collision_file.resolve()
+            if col_canonical.is_relative_to(target_canonical):
+                if collision_file.exists():
+                    skipped.append((collision_file, "File already exists (overwrite prevented)"))
+                elif dry_run:
+                    created.append(collision_file)
+                else:
+                    collision_file.parent.mkdir(parents=True, exist_ok=True)
+                    collision_file.write_text(
+                        "%PDF-1.4\n% SlothSort Pre-existing collision demonstration file\n%%EOF\n",
+                        encoding="utf-8",
+                    )
+                    created.append(collision_file)
+        except Exception:
+            pass
+
     return created, skipped
 
 
@@ -291,6 +313,11 @@ def main(argv: Optional[List[str]] = None) -> int:
         action="store_true",
         help="Simulate file creation without writing anything to disk.",
     )
+    parser.add_argument(
+        "--with-collision",
+        action="store_true",
+        help="Seed an intentional pre-existing target file (Finance/invoice_2026_q3_draft.pdf) to demonstrate collision detection.",
+    )
 
     args = parser.parse_args(argv)
 
@@ -306,7 +333,9 @@ def main(argv: Optional[List[str]] = None) -> int:
     print("-" * 60)
 
     try:
-        created, skipped = seed_demo_directory(target_path, dry_run=args.dry_run)
+        created, skipped = seed_demo_directory(
+            target_path, dry_run=args.dry_run, with_collision=args.with_collision
+        )
     except Exception as e:
         print(f"❌ Error seeding directory: {e}", file=sys.stderr)
         return 1

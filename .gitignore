@@ -34,10 +34,12 @@ htmlcov/
 .tox/
 .nox/
 
-# User-specific & Manifests
+# User-specific & Environment
 .slothsort/
 .env
+.env.*
 .env.local
+!.env.example
 
 # IDEs
 .idea/

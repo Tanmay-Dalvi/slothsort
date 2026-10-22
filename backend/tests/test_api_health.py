@@ -32,3 +32,13 @@ def test_api_providers_endpoint():
     assert any("Mock" in n for n in provider_names)
     assert any("Ollama" in n for n in provider_names)
     assert any("Gemini" in n for n in provider_names)
+
+
+def test_cors_configuration():
+    """Verifies that CORS origins default securely to local development URLs."""
+    from backend.app.config import settings
+    origins = settings.CORS_ORIGINS
+    assert "http://localhost:5173" in origins
+    assert "http://127.0.0.1:5173" in origins
+    assert "http://localhost:3000" in origins
+    assert "http://127.0.0.1:3000" in origins

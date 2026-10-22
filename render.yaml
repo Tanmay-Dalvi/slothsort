@@ -1,0 +1,32 @@
+# ==============================================================================
+# Render Blueprint Specification for SlothSort
+# https://render.com/docs/blueprint-spec
+# ==============================================================================
+# This configuration deploys the SlothSort web interface as a fast, secure Static Site
+# with Interactive Public Demo Mode enabled.
+#
+# ARCHITECTURAL & PRIVACY NOTICE:
+# SlothSort is a local-first application designed to organize files directly on a
+# user's own computer using local AI models (Ollama/Gemma).
+#
+# To protect visitor privacy and system security:
+# 1. The public cloud deployment serves ONLY the frontend as a static site.
+# 2. No unauthenticated file-management backend is exposed to the public internet.
+# 3. Interactive Public Demo Mode runs in a client-side sandbox with 12 sample files,
+#    allowing judges and reviewers to experience the full AI workflow safely.
+# 4. Zero requests are made to visitor localhost / 127.0.0.1.
+# ==============================================================================
+
+services:
+  - type: web
+    name: slothsort-web
+    runtime: static
+    buildCommand: cd frontend && npm install && npm run build
+    staticPublishPath: ./frontend/dist
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      - key: VITE_PUBLIC_DEMO_MODE
+        value: "true"

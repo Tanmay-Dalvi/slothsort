@@ -6,7 +6,8 @@ import { ScanOverview } from './components/ScanOverview';
 import { PlanDiffTable } from './components/PlanDiffTable';
 import { ExecutionModal } from './components/ExecutionModal';
 import { UndoHistoryDrawer } from './components/UndoHistoryDrawer';
-import { api } from './services/api';
+import { GettingStartedGuide } from './components/GettingStartedGuide';
+import { api, isDemoMode, setDemoMode } from './services/api';
 import {
   ExecutionResult,
   FileOperation,
@@ -20,6 +21,9 @@ import {
 import { AlertCircle, X } from 'lucide-react';
 
 export function App() {
+  // Demo Sandbox vs Live Mode
+  const [isDemo, setIsDemo] = useState<boolean>(isDemoMode());
+
   // Connectivity & Providers
   const [isBackendConnected, setIsBackendConnected] = useState<boolean>(false);
   const [providers, setProviders] = useState<ProviderHealth[]>([]);
@@ -77,6 +81,22 @@ export function App() {
   useEffect(() => {
     loadInitialData();
   }, [loadInitialData]);
+
+  // Listen for mode changes (e.g. manual toggle between demo and live)
+  useEffect(() => {
+    const handleModeChange = () => {
+      setIsDemo(isDemoMode());
+      loadInitialData();
+    };
+    window.addEventListener('slothsort_mode_change', handleModeChange);
+    return () => window.removeEventListener('slothsort_mode_change', handleModeChange);
+  }, [loadInitialData]);
+
+  const handleToggleDemo = () => {
+    const next = !isDemo;
+    setDemoMode(next);
+    setIsDemo(next);
+  };
 
   // Refresh history records
   const handleRefreshHistory = async () => {
@@ -265,6 +285,8 @@ export function App() {
         isBackendConnected={isBackendConnected}
         historyCount={historyManifests.length}
         onOpenHistory={() => setIsHistoryOpen(true)}
+        isDemo={isDemo}
+        onToggleDemo={handleToggleDemo}
       />
 
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
@@ -310,6 +332,15 @@ export function App() {
           </div>
         </div>
 
+        {/* Getting Started Guide shown on initial load before scan */}
+        {!scanResult && !organizationPlan && (
+          <GettingStartedGuide
+            onSelectDemoPath={(path) => setFolderPath(path)}
+            onTriggerScan={handleScan}
+            isDemo={isDemo}
+          />
+        )}
+
         {/* Scan Overview Stats */}
         {scanResult && <ScanOverview scanResult={scanResult} />}
 
@@ -341,6 +372,7 @@ export function App() {
             onConfirmExecute={handleExecute}
             onUndoBatch={handleRollback}
             isUndoing={isRollingBack}
+            isDemo={isDemo}
           />
         )}
       </main>
@@ -355,6 +387,7 @@ export function App() {
         isRollingBack={isRollingBack}
         activeRollingBackId={activeRollingBackId}
         lastRollbackResult={lastRollbackResult}
+        isDemo={isDemo}
       />
     </div>
   );

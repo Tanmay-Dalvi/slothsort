@@ -5,6 +5,7 @@ import {
   RotateCcw,
   Loader2,
   Lock,
+  Sparkles,
 } from 'lucide-react';
 import { ExecutionResult } from '../types/api';
 
@@ -19,6 +20,7 @@ interface ExecutionModalProps {
   onConfirmExecute: () => void;
   onUndoBatch: (manifestId: string) => void;
   isUndoing: boolean;
+  isDemo?: boolean;
 }
 
 export const ExecutionModal: React.FC<ExecutionModalProps> = ({
@@ -32,6 +34,7 @@ export const ExecutionModal: React.FC<ExecutionModalProps> = ({
   onConfirmExecute,
   onUndoBatch,
   isUndoing,
+  isDemo = false,
 }) => {
   const isBlockedByConflicts = conflictsCount > 0;
   const isBlockedByEdits = hasUnsavedEdits;
@@ -51,60 +54,63 @@ export const ExecutionModal: React.FC<ExecutionModalProps> = ({
         <div
           className={`p-4 rounded-xl border space-y-3 ${
             executionResult.status === 'SUCCESS'
-              ? 'bg-forest-50/70 border-forest-300'
+              ? 'bg-forest-50/80 border-forest-200 text-forest-950'
               : executionResult.status === 'PARTIAL_FAILURE'
-              ? 'bg-amber-50 border-amber-300'
-              : 'bg-red-50 border-red-300'
+              ? 'bg-amber-50 border-amber-200 text-amber-950'
+              : 'bg-red-50 border-red-200 text-red-950'
           }`}
         >
-          <div className="flex items-center justify-between">
+          <div className="flex items-start justify-between">
             <div className="flex items-center space-x-2">
-              {executionResult.status === 'SUCCESS' ? (
-                <CheckCircle className="w-5 h-5 text-forest-700" />
-              ) : (
-                <AlertTriangle className="w-5 h-5 text-amber-600" />
-              )}
-              <span className="font-bold text-sm text-slate-900">
-                Batch Result: {executionResult.status}
-              </span>
+              <CheckCircle className="w-5 h-5 text-forest-700 flex-shrink-0" />
+              <div>
+                <h3 className="font-bold text-sm">
+                  {isDemo
+                    ? `Simulated Execution Complete (${executionResult.executed_count} files)`
+                    : `Execution Complete (${executionResult.executed_count} files moved)`}
+                </h3>
+                <p className="text-xs text-slate-600 mt-0.5">
+                  {isDemo
+                    ? 'In this public browser sandbox, operations were simulated in memory. No real files were altered.'
+                    : 'Safe move batch finished. Audit manifest logged for full rollback support.'}
+                </p>
+              </div>
             </div>
 
             {executionResult.undo_manifest_id && (
-              <span className="text-xs font-mono bg-white px-2 py-0.5 rounded border border-forest-200 text-forest-900">
-                {executionResult.undo_manifest_id}
+              <span className="text-[11px] font-mono bg-white/80 px-2 py-0.5 rounded border border-forest-200 text-forest-800">
+                Manifest: {executionResult.undo_manifest_id.slice(0, 16)}...
               </span>
             )}
           </div>
 
-          <p className="text-xs text-slate-700 leading-relaxed">
-            Successfully moved {executionResult.executed_count} file(s).
-            {executionResult.failed_count > 0 && ` ${executionResult.failed_count} file(s) failed.`}
-          </p>
-
           {executionResult.errors.length > 0 && (
-            <div className="space-y-1 text-xs text-red-700 font-mono bg-white/70 p-2 rounded border border-red-200">
-              {executionResult.errors.map((err, i) => (
-                <div key={i}>{err}</div>
-              ))}
+            <div className="text-xs text-red-700 bg-white/70 p-2.5 rounded-lg border border-red-200 space-y-1">
+              <div className="font-semibold">Operation errors encountered:</div>
+              <ul className="list-disc pl-4 space-y-0.5">
+                {executionResult.errors.map((err, i) => (
+                  <li key={i}>{err}</li>
+                ))}
+              </ul>
             </div>
           )}
 
-          {/* Quick 1-Click Rollback Action */}
+          {/* Quick Undo Action Trigger */}
           {executionResult.undo_manifest_id && (
             <div className="pt-2 flex items-center justify-between border-t border-forest-200/60">
-              <span className="text-xs text-slate-600 font-medium">
-                Regret this organization? Restore files immediately.
+              <span className="text-xs text-forest-800 font-medium">
+                Changed your mind? Restore all items instantly.
               </span>
               <button
                 type="button"
                 onClick={() => onUndoBatch(executionResult.undo_manifest_id!)}
                 disabled={isUndoing}
-                className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-white text-forest-900 border border-forest-400 hover:bg-forest-100 shadow-sm transition"
+                className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-white text-forest-900 border border-forest-300 hover:bg-forest-100 transition shadow-xs"
               >
                 {isUndoing ? (
                   <>
-                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                    <span>Reverting...</span>
+                    <Loader2 className="w-3.5 h-3.5 animate-spin text-forest-700" />
+                    <span>Rolling back...</span>
                   </>
                 ) : (
                   <>
@@ -129,10 +135,17 @@ export const ExecutionModal: React.FC<ExecutionModalProps> = ({
               <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-cream-100 text-slate-700 border border-cream-300">
                 {approvedCount} of {totalCount} files selected
               </span>
+              {isDemo && (
+                <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-amber-50 text-amber-800 border border-amber-200">
+                  Sandbox Simulation
+                </span>
+              )}
             </div>
 
             <p className="text-xs text-slate-500">
-              Deterministic moves only. SlothSort will never overwrite or delete files.
+              {isDemo
+                ? 'Simulated moves only. In public demo mode, no real files on your computer or servers are modified.'
+                : 'Deterministic moves only. SlothSort will never overwrite or delete files.'}
             </p>
 
             {isBlockedByConflicts && (
@@ -163,12 +176,20 @@ export const ExecutionModal: React.FC<ExecutionModalProps> = ({
               {isExecuting ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin text-forest-300" />
-                  <span>Applying Changes...</span>
+                  <span>{isDemo ? 'Simulating Move Batch...' : 'Applying Changes...'}</span>
                 </>
               ) : (
                 <>
-                  <Lock className="w-4 h-4 text-forest-300" />
-                  <span>Apply Approved Changes ({approvedCount})</span>
+                  {isDemo ? (
+                    <Sparkles className="w-4 h-4 text-amber-300" />
+                  ) : (
+                    <Lock className="w-4 h-4 text-forest-300" />
+                  )}
+                  <span>
+                    {isDemo
+                      ? `Simulate Execution (${approvedCount})`
+                      : `Apply Approved Changes (${approvedCount})`}
+                  </span>
                 </>
               )}
             </button>

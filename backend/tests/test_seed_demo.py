@@ -156,3 +156,13 @@ def test_cli_main_invalid_path(capsys):
     assert ret == 1
     captured = capsys.readouterr()
     assert "Error:" in captured.err
+
+
+def test_seed_demo_with_collision(tmp_path: Path, capsys):
+    target = tmp_path / "cli_collision_demo"
+    ret = main(["--with-collision", str(target)])
+    assert ret == 0
+
+    # Normal files plus the collision file inside Finance/
+    assert (target / "invoice_2026_q3_draft.pdf").exists()
+    assert (target / "Finance" / "invoice_2026_q3_draft.pdf").exists()
